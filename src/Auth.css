@@ -1,0 +1,74 @@
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-color);
+    padding: 2rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 1.5rem;
+    padding: 3rem 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.auth-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.auth-logo h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.05em;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Supabase Auth UI Overrides for Dark Mode matching */
+.supabase-auth-container {
+    width: 100%;
+}
+
+.supabase-auth-input {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    font-family: inherit !important;
+    border-radius: 0.5rem !important;
+    padding: 0.875rem 1rem !important;
+}
+
+.supabase-auth-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 1px var(--primary-color) !important;
+}
+
+.supabase-auth-label {
+    color: var(--text-muted) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.supabase-auth-button {
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    padding: 0.875rem !important;
+    font-family: inherit !important;
+}
