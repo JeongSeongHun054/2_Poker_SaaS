@@ -18,6 +18,7 @@ import {
 import './index.css';
 import AddSessionModal from './AddSessionModal';
 import AuthPage from './AuthPage';
+import AdminDashboard from './AdminDashboard';
 import { supabase } from './supabaseClient';
 
 // Initial chart state
@@ -34,6 +35,7 @@ function App() {
   const [gameToDelete, setGameToDelete] = useState(null);
   const [games, setGames] = useState(initialGames);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const ITEMS_PER_PAGE = 15;
 
   useEffect(() => {
@@ -248,22 +250,28 @@ function App() {
           PokerSaaS
         </div>
         <nav className="nav-links">
-          <a href="#" className="nav-link active">
+          <a href="#" className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}>
             <LayoutDashboard size={20} />
             Dashboard
           </a>
-          <a href="#" className="nav-link">
+          <a href="#" className={`nav-link ${activeTab === 'history' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('history'); }}>
             <History size={20} />
             Session History
           </a>
-          <a href="#" className="nav-link">
+          <a href="#" className={`nav-link ${activeTab === 'goals' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('goals'); }}>
             <Target size={20} />
             Goals & ROI
           </a>
-          <a href="#" className="nav-link">
+          <a href="#" className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('settings'); }}>
             <Settings size={20} />
             Settings
           </a>
+          {session?.user?.email === 'gnsl1465@naver.com' && (
+            <a href="#" className={`nav-link ${activeTab === 'admin' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('admin'); }}>
+              <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>👑</span>
+              Admin Menu
+            </a>
+          )}
           <div style={{ marginTop: 'auto' }}>
             <button className="nav-link" onClick={handleSignOut} style={{ width: '100%', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
               <LogOut size={20} />
@@ -275,144 +283,150 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
-        <header className="header">
-          <div>
-            <h1>Overview</h1>
-            <p className="text-muted">Welcome back! Here's your performance summary.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button className="btn-danger" onClick={() => setIsResetConfirmOpen(true)}>
-              Reset All Data
-            </button>
-            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} /> Record Session
-            </button>
-          </div>
-        </header>
+        {activeTab === 'admin' ? (
+          <AdminDashboard />
+        ) : (
+          <>
+            <header className="header">
+              <div>
+                <h1>Overview</h1>
+                <p className="text-muted">Welcome back! Here's your performance summary.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn-danger" onClick={() => setIsResetConfirmOpen(true)}>
+                  Reset All Data
+                </button>
+                <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+                  <Plus size={18} /> Record Session
+                </button>
+              </div>
+            </header>
 
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <span className="stat-title">Total Profit (WPL)</span>
-            <span className="stat-value text-success">{formatTotalWPL}</span>
-            <span className="stat-change text-muted">{hasGames ? 'Based on all sessions' : 'No data yet'}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-title">Total Profit (WPT)</span>
-            <span className="stat-value text-success">${totalWPT.toFixed(2)}</span>
-            <span className="stat-change text-muted">{hasGames ? 'Based on all sessions' : 'No data yet'}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-title">Total Sessions</span>
-            <span className="stat-value">{games.length}</span>
-            <span className="stat-change text-muted">Active records</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-title">Win Rate</span>
-            <span className="stat-value">{winRate}%</span>
-            <span className="stat-change text-muted">Percentage of winning sessions</span>
-          </div>
-        </div>
-
-        {/* Chart */}
-        <section className="chart-section">
-          <h2 className="chart-header">Session Profit Timeline</h2>
-          <div style={{ width: '100%', height: 300 }}>
-            <ResponsiveContainer>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis
-                  dataKey="id"
-                  stroke="#94a3b8"
-                  tickFormatter={(id) => chartData[id]?.displayDate || ''}
-                />
-                <YAxis stroke="#94a3b8" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
-                  itemStyle={{ color: '#f8fafc' }}
-                  formatter={(value) => [formatWPLCurrency(value), 'Bankroll']}
-                  labelFormatter={(label) => chartData[label]?.date || label}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="bankroll"
-                  stroke="var(--primary-color)"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "var(--primary-color)" }}
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
-        {/* Recent Sessions */}
-        <section className="recent-games">
-          <div className="table-header">
-            Recent Sessions
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Format</th>
-                <th>Stakes</th>
-                <th>Result</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentGames.map((game) => (
-                <tr key={game.id}>
-                  <td>{game.date}</td>
-                  <td>{game.format}</td>
-                  <td>{game.stakes}</td>
-                  <td className={game.result > 0 ? 'text-success' : game.result < 0 ? 'text-danger' : 'text-muted'}>
-                    {game.result > 0 ? '+' : ''}
-                    {game.format?.startsWith('[WPL]') ? formatWPLCurrency(game.result) : (game.result < 0 ? '-' : '') + `$${Math.abs(game.result)}`}
-                  </td>
-                  <td>
-                    <span className={`badge ${game.status}`}>
-                      {game.status}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleDeleteGame(game.id)}
-                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-danger)', padding: '5px' }}
-                      title="Delete Session"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {totalPages > 1 && (
-            <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', gap: '1rem', borderTop: '1px solid var(--border-color)' }}>
-              <button
-                className="btn-outline"
-                style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              >
-                <ChevronLeft size={16} /> Previous
-              </button>
-              <span className="text-muted text-sm">Page {currentPage} of {totalPages}</span>
-              <button
-                className="btn-outline"
-                style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              >
-                Next <ChevronRight size={16} />
-              </button>
+            {/* Stats Grid */}
+            <div className="stats-grid">
+              <div className="stat-card">
+                <span className="stat-title">Total Profit (WPL)</span>
+                <span className="stat-value text-success">{formatTotalWPL}</span>
+                <span className="stat-change text-muted">{hasGames ? 'Based on all sessions' : 'No data yet'}</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-title">Total Profit (WPT)</span>
+                <span className="stat-value text-success">${totalWPT.toFixed(2)}</span>
+                <span className="stat-change text-muted">{hasGames ? 'Based on all sessions' : 'No data yet'}</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-title">Total Sessions</span>
+                <span className="stat-value">{games.length}</span>
+                <span className="stat-change text-muted">Active records</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-title">Win Rate</span>
+                <span className="stat-value">{winRate}%</span>
+                <span className="stat-change text-muted">Percentage of winning sessions</span>
+              </div>
             </div>
-          )}
-        </section>
+
+            {/* Chart */}
+            <section className="chart-section">
+              <h2 className="chart-header">Session Profit Timeline</h2>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis
+                      dataKey="id"
+                      stroke="#94a3b8"
+                      tickFormatter={(id) => chartData[id]?.displayDate || ''}
+                    />
+                    <YAxis stroke="#94a3b8" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
+                      itemStyle={{ color: '#f8fafc' }}
+                      formatter={(value) => [formatWPLCurrency(value), 'Bankroll']}
+                      labelFormatter={(label) => chartData[label]?.date || label}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="bankroll"
+                      stroke="var(--primary-color)"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "var(--primary-color)" }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </section>
+
+            {/* Recent Sessions */}
+            <section className="recent-games">
+              <div className="table-header">
+                Recent Sessions
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Format</th>
+                    <th>Stakes</th>
+                    <th>Result</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentGames.map((game) => (
+                    <tr key={game.id}>
+                      <td>{game.date}</td>
+                      <td>{game.format}</td>
+                      <td>{game.stakes}</td>
+                      <td className={game.result > 0 ? 'text-success' : game.result < 0 ? 'text-danger' : 'text-muted'}>
+                        {game.result > 0 ? '+' : ''}
+                        {game.format?.startsWith('[WPL]') ? formatWPLCurrency(game.result) : (game.result < 0 ? '-' : '') + `$${Math.abs(game.result)}`}
+                      </td>
+                      <td>
+                        <span className={`badge ${game.status}`}>
+                          {game.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleDeleteGame(game.id)}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-danger)', padding: '5px' }}
+                          title="Delete Session"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {totalPages > 1 && (
+                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1.5rem', gap: '1rem', borderTop: '1px solid var(--border-color)' }}>
+                  <button
+                    className="btn-outline"
+                    style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  >
+                    <ChevronLeft size={16} /> Previous
+                  </button>
+                  <span className="text-muted text-sm">Page {currentPage} of {totalPages}</span>
+                  <button
+                    className="btn-outline"
+                    style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </main>
 
       {/* Modals */}
