@@ -19,6 +19,9 @@ import './index.css';
 import AddSessionModal from './AddSessionModal';
 import AuthPage from './AuthPage';
 import AdminDashboard from './AdminDashboard';
+import SessionHistory from './SessionHistory';
+import GoalsROI from './GoalsROI';
+import SettingsPage from './Settings';
 import { supabase } from './supabaseClient';
 
 // Initial chart state
@@ -285,6 +288,12 @@ function App() {
       <main className="main-content">
         {activeTab === 'admin' ? (
           <AdminDashboard />
+        ) : activeTab === 'history' ? (
+          <SessionHistory games={games} formatWPLCurrency={formatWPLCurrency} handleDeleteGame={handleDeleteGame} />
+        ) : activeTab === 'goals' ? (
+          <GoalsROI games={games} formatWPLCurrency={formatWPLCurrency} />
+        ) : activeTab === 'settings' ? (
+          <SettingsPage userEmail={session?.user?.email} />
         ) : (
           <>
             <header className="header">
